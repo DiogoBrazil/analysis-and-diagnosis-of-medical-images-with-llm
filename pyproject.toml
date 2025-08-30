@@ -1,0 +1,15 @@
+[project]
+name = "chatbot-analysis-img-xray"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "agno>=1.8.1",
+    "google-genai>=1.32.0",
+    "python-dotenv>=1.1.1",
+    "python-fasthtml>=0.12.25",
+    "reportlab>=4.4.3",
+    "tavily-python>=0.7.11",
+    "uvicorn>=0.35.0",
+]
