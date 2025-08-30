@@ -1,26 +1,791 @@
-/* HTMX indicator */
-.htmx-indicator {
-  display: none;
-}
-.htmx-request .htmx-indicator {
-  display: inline-block;
+/* ==================== CUSTOM MEDICAL THEME ==================== */
+
+/* ---------- CSS Variables ---------- */
+:root {
+  --medical-primary: #0056b3;
+  --medical-secondary: #17a2b8;
+  --medical-success: #28a745;
+  --medical-warning: #ffc107;
+  --medical-danger: #dc3545;
+  --medical-light: #f8f9fa;
+  --medical-gradient: linear-gradient(135deg, #0056b3, #17a2b8);
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --border-radius: 12px;
+  --spacing: 1.5rem;
 }
 
-/* Spinner simples */
+/* ---------- Base Overrides ---------- */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  line-height: 1.6;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  min-height: 100vh;
+}
+
+/* ---------- Header Styling ---------- */
+header {
+  background: var(--medical-gradient);
+  box-shadow: 0 2px 10px rgba(0, 86, 179, 0.15);
+  margin-bottom: 2rem;
+  border-radius: 0 0 var(--border-radius) var(--border-radius);
+}
+
+header h1 {
+  color: white;
+  font-weight: 700;
+  font-size: 2rem;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+header p {
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0.5rem 0 0 0;
+  font-size: 1rem;
+}
+
+/* ---------- Navigation ---------- */
+nav ul {
+  display: flex;
+  gap: 1rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  align-items: center;
+}
+
+nav a {
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+nav a:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  transform: translateY(-1px);
+}
+
+nav button {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+nav button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+/* ---------- Cards ---------- */
+article {
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  margin-bottom: var(--spacing);
+}
+
+article:hover {
+  box-shadow: var(--card-shadow-hover);
+  transform: translateY(-2px);
+}
+
+article h2 {
+  color: var(--medical-primary);
+  font-weight: 600;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  border-bottom: 2px solid var(--medical-light);
+  padding-bottom: 0.5rem;
+}
+
+article h3 {
+  color: var(--medical-primary);
+  font-weight: 600;
+  margin: 1.5rem 0 1rem 0;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ---------- Form Styling ---------- */
+form {
+  background: var(--medical-light);
+  padding: var(--spacing);
+  border-radius: var(--border-radius);
+  border: 2px dashed var(--medical-secondary);
+  margin-bottom: var(--spacing);
+  transition: all 0.3s ease;
+}
+
+form:hover {
+  border-color: var(--medical-primary);
+  background: rgba(0, 86, 179, 0.02);
+}
+
+input[type="file"] {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  background: white;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+input[type="file"]:focus {
+  border-color: var(--medical-primary);
+  box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.1);
+  outline: none;
+}
+
+/* ---------- Buttons ---------- */
+button, .button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+}
+
+button.primary, .button.primary {
+  background: var(--medical-gradient);
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 86, 179, 0.2);
+}
+
+button.primary:hover, .button.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 86, 179, 0.3);
+}
+
+button.secondary, .button.secondary {
+  background: var(--medical-secondary);
+  color: white;
+}
+
+button.secondary:hover, .button.secondary:hover {
+  background: #138496;
+  transform: translateY(-1px);
+}
+
+a.button {
+  text-align: center;
+  justify-content: center;
+}
+
+/* ---------- Grid Improvements ---------- */
+.grid {
+  display: grid;
+  gap: var(--spacing);
+  align-items: start;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+}
+
+/* ---------- Images ---------- */
+img {
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+  transition: all 0.3s ease;
+  max-width: 100%;
+  height: auto;
+}
+
+img:hover {
+  transform: scale(1.02);
+  box-shadow: var(--card-shadow-hover);
+}
+
+/* ---------- Tables ---------- */
+table {
+  background: white;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+  width: 100%;
+}
+
+th {
+  background: var(--medical-gradient);
+  color: white;
+  font-weight: 600;
+  padding: 1rem;
+  text-align: left;
+}
+
+td {
+  padding: 1rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+tr:hover {
+  background: var(--medical-light);
+}
+
+/* ---------- HTMX Indicator ---------- */
+.htmx-indicator { 
+  display: none; 
+}
+
+.htmx-request .htmx-indicator { 
+  display: inline-flex; 
+  align-items: center; 
+  gap: 8px; 
+  color: var(--medical-primary);
+  font-weight: 600;
+}
+
+/* ---------- Spinner ---------- */
 .spinner {
-  width: 20px;
+  width: 20px; 
   height: 20px;
-  border: 3px solid #bbb;
-  border-top-color: transparent;
+  border: 3px solid #e9ecef; 
+  border-top-color: var(--medical-primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
-  vertical-align: middle;
-}
-@keyframes spin {
-  to { transform: rotate(360deg); }
 }
 
-/* Dark theme ajuste (opcional) */
+@keyframes spin { 
+  to { transform: rotate(360deg); } 
+}
+
+/* ---------- Progress Bar ---------- */
+.progress { 
+  width: 100%; 
+  height: 8px; 
+  background: #e9ecef; 
+  border-radius: 999px; 
+  margin-top: 12px; 
+  overflow: hidden;
+}
+
+.progress .bar { 
+  width: 0%; 
+  height: 100%; 
+  background: var(--medical-gradient); 
+  border-radius: 999px; 
+  transition: width .3s ease; 
+}
+
+/* ---------- Responsive Design ---------- */
+@media (max-width: 768px) {
+  :root {
+    --spacing: 1rem;
+  }
+  
+  .container {
+    padding: 1rem;
+  }
+  
+  header h1 {
+    font-size: 1.5rem;
+  }
+  
+  nav ul {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  
+  button, .button {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  table {
+    font-size: 0.9rem;
+  }
+  
+  th, td {
+    padding: 0.5rem;
+  }
+}
+
+/* ---------- Status Indicators ---------- */
+.status-success {
+  color: var(--medical-success);
+  background: rgba(40, 167, 69, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.status-warning {
+  color: var(--medical-warning);
+  background: rgba(255, 193, 7, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.status-danger {
+  color: var(--medical-danger);
+  background: rgba(220, 53, 69, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* ---------- Medical Report Styling ---------- */
+.medical-report {
+  line-height: 1.8;
+  font-size: 1.05rem;
+}
+
+.medical-report h3 {
+  color: var(--medical-primary);
+  border-left: 4px solid var(--medical-primary);
+  padding-left: 1rem;
+  margin: 2rem 0 1rem 0;
+}
+
+.medical-report ul {
+  padding-left: 1.5rem;
+}
+
+.medical-report li {
+  margin-bottom: 0.5rem;
+}
+
+.medical-report strong {
+  color: var(--medical-primary);
+}
+
+/* ---------- Dark Theme ---------- */
 :root[data-theme="dark"] {
-  color-scheme: dark;
+  --medical-light: #1a1a1a;
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+}
+
+:root[data-theme="dark"] body {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+:root[data-theme="dark"] article {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+:root[data-theme="dark"] form {
+  background: #0f172a;
+  border-color: var(--medical-secondary);
+}
+
+:root[data-theme="dark"] input[type="file"] {
+  background: #1e293b;
+  border-color: #334155;
+  color: white;
+}
+
+:root[data-theme="dark"] table {
+  background: #1e293b;
+}
+
+:root[data-theme="dark"] td {
+  border-color: #334155;
+}
+
+:root[data-theme="dark"] tr:hover {
+  background: #0f172a;
+}
+
+/* ---------- Utilities ---------- */
+.text-center { text-align: center; }
+.text-sm { font-size: 0.9rem; }
+.text-lg { font-size: 1.1rem; }
+.font-bold { font-weight: 700; }
+.mt-4 { margin-top: 1rem; }
+.mb-4 { margin-bottom: 1rem; }
+.p-4 { padding: 1rem; }
+
+/* ---------- Enhanced Components ---------- */
+
+/* Upload Card */
+.upload-card {
+  background: linear-gradient(135deg, rgba(0, 86, 179, 0.02), rgba(23, 162, 184, 0.02));
+  border: 2px dashed var(--medical-secondary);
+  transition: all 0.4s ease;
+}
+
+.upload-card:hover {
+  border-color: var(--medical-primary);
+  background: linear-gradient(135deg, rgba(0, 86, 179, 0.05), rgba(23, 162, 184, 0.05));
+  transform: translateY(-2px);
+}
+
+.enhanced-dropzone {
+  padding: 3rem 2rem;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border: 3px dashed var(--medical-secondary);
+  border-radius: var(--border-radius);
+  text-align: center;
+  font-size: 1.1rem;
+  color: var(--medical-primary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.enhanced-dropzone::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.enhanced-dropzone:hover::before {
+  left: 100%;
+}
+
+.enhanced-dropzone:hover {
+  border-color: var(--medical-primary);
+  background: linear-gradient(135deg, rgba(0, 86, 179, 0.08), rgba(23, 162, 184, 0.08));
+  transform: scale(1.02);
+}
+
+/* Upload Instructions */
+.upload-instructions {
+  color: #6c757d;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+/* Preview Card */
+.preview-card .image-container {
+  text-align: center;
+  margin: 1.5rem 0;
+  position: relative;
+}
+
+.preview-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.preview-image:hover {
+  transform: scale(1.05);
+  box-shadow: var(--card-shadow-hover);
+}
+
+/* File Info */
+.file-info {
+  background: var(--medical-light);
+  padding: 0.75rem;
+  border-radius: 6px;
+  border-left: 4px solid var(--medical-primary);
+  margin: 1rem 0;
+}
+
+/* Action Buttons */
+.action-buttons {
+  margin-top: 2rem;
+  gap: 1rem;
+}
+
+.analysis-btn, .upload-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.analysis-btn::before, .upload-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.analysis-btn:hover::before, .upload-btn:hover::before {
+  left: 100%;
+}
+
+/* Processing Text */
+.processing-text {
+  color: var(--medical-primary);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Result Card */
+.result-card {
+  border-left: 5px solid var(--medical-primary);
+}
+
+.report-title {
+  background: var(--medical-gradient);
+  color: white;
+  padding: 1rem;
+  margin: -1rem -1rem 1.5rem -1rem;
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+/* Download Actions */
+.download-actions {
+  background: var(--medical-light);
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  margin-top: 2rem;
+}
+
+.download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+/* History Components */
+.history-card {
+  overflow: hidden;
+}
+
+.history-title {
+  background: var(--medical-gradient);
+  color: white;
+  padding: 1rem;
+  margin: -1rem -1rem 1.5rem -1rem;
+}
+
+.history-table {
+  margin: 0;
+}
+
+.table-header {
+  background: var(--medical-primary);
+}
+
+.date-cell {
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.filename-cell {
+  font-weight: 600;
+  color: var(--medical-primary);
+}
+
+.actions-cell {
+  white-space: nowrap;
+}
+
+.action-btn {
+  font-size: 0.85rem;
+  padding: 0.25rem 0.5rem;
+  margin-right: 0.25rem;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+.danger-btn:hover {
+  background: var(--medical-danger);
+  color: white;
+}
+
+/* Empty State */
+.empty-state {
+  padding: 3rem 2rem;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border-radius: var(--border-radius);
+  border: 2px dashed #dee2e6;
+}
+
+/* Footer */
+.medical-footer {
+  margin-top: 4rem;
+  padding: 2rem 0;
+  background: linear-gradient(135deg, var(--medical-light), #e9ecef);
+  border-top: 3px solid var(--medical-primary);
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.medical-warning {
+  color: var(--medical-danger);
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+}
+
+.footer-credit {
+  color: #6c757d;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Navigation Enhancements */
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+/* Card Titles */
+.card-title, .preview-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Enhanced Responsiveness */
+@media (max-width: 992px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .enhanced-dropzone {
+    padding: 2rem 1rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  :root {
+    --spacing: 0.75rem;
+  }
+  
+  .container {
+    padding: 0.5rem;
+  }
+  
+  .enhanced-dropzone {
+    padding: 1.5rem 0.5rem;
+    font-size: 0.9rem;
+  }
+  
+  .action-btn {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.4rem;
+  }
+  
+  .actions-cell {
+    font-size: 0.8rem;
+  }
+  
+  .history-table th, .history-table td {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.85rem;
+  }
+  
+  .medical-footer {
+    margin-top: 2rem;
+    padding: 1rem 0;
+  }
+  
+  .medical-warning, .footer-credit {
+    font-size: 0.8rem;
+  }
+  
+  header h1 {
+    font-size: 1.3rem;
+  }
+  
+  header p {
+    font-size: 0.85rem;
+  }
+}
+
+/* Accessibility Improvements */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  :root {
+    --medical-primary: #000080;
+    --medical-secondary: #006060;
+    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  }
+  
+  article {
+    border: 2px solid #000;
+  }
+  
+  .enhanced-dropzone {
+    border: 3px solid #000;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .container {
+    max-width: none;
+  }
+  
+  header, footer, nav, .download-actions, .action-buttons {
+    display: none;
+  }
+  
+  .medical-report {
+    font-size: 12pt;
+    line-height: 1.4;
+  }
+  
+  article {
+    box-shadow: none;
+    border: 1px solid #000;
+    page-break-inside: avoid;
+  }
+  
+  h2, h3 {
+    page-break-after: avoid;
+  }
 }

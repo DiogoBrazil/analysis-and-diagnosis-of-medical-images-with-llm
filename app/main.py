@@ -1,12 +1,14 @@
 import os
 from dotenv import load_dotenv
-import uvicorn
 from fasthtml.common import *
 from starlette.responses import PlainTextResponse, FileResponse
 from starlette.datastructures import UploadFile as StarletteUploadFile
+
 from app.services.imaging import is_allowed_filename, save_upload_to_disk, STORAGE_DIR
 from app.services.pipeline import run_pipeline
 from app.services.db import save_analysis, list_analyses, get_analysis, delete_analysis
+
+# PDF
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
@@ -19,113 +21,167 @@ MAX_BYTES = MAX_MB * 1024 * 1024
 app = FastHTML()
 rt = app.route
 
+# ---------- Helpers UI ----------
 def HeaderBar():
     return Header(
         Nav(
             Ul(
-                Li(A("Início", href="/")),
-                Li(A("Histórico", href="/history")),
-                Li(Button("Modo escuro", type="button", onclick="toggleTheme()", cls="secondary outline")),
+                Li(A("🏠 Início", href="/", cls="nav-link")),
+                Li(A("📋 Histórico", href="/history", cls="nav-link")),
+                Li(Button("🌙 Modo escuro", type="button", onclick="toggleTheme()", cls="secondary outline theme-toggle")),
             ),
         ),
-        H1("Analisador de Imagens Médicas"),
-        P("Resultados não substituem avaliação profissional.", cls="contrast"),
+        H1("🩺 Analisador de Imagens Médicas"),
+        P("⚠️ Resultados não substituem avaliação médica profissional.", cls="contrast medical-disclaimer"),
         cls="container"
     )
 
 def UploadCard():
+    # Form com auto-submit quando o input #file mudar (hx-trigger) e DnD via JS
     return Card(
-        H2("Enviar imagem"),
-        P(f"Formatos aceitos: JPG, JPEG, PNG, BMP, GIF (até {MAX_MB}MB)."),
+        H2("📤 Enviar Imagem Médica", cls="card-title"),
+        P(f"📋 Arraste e solte a imagem, ou clique para selecionar (JPG, JPEG, PNG, BMP, GIF — até {MAX_MB}MB).", cls="upload-instructions"),
         Form(
-            Input(type="file", name="file", accept="image/*", required=True),
+            # zona de drop: clica → abre seletor; drop → faz upload
             Div(
-                Button("Carregar", type="submit", cls="primary"),
-                Span(Span(cls="spinner"), " Processando…", cls="htmx-indicator"),
-                cls="grid"
+                Div("🖼️ Solte a imagem aqui ou clique para selecionar",
+                    id="dropzone",
+                    cls="dropzone enhanced-dropzone",
+                    role="button",
+                    tabindex="0",
+                    onclick="document.getElementById('file').click();"),
+                # barra de progresso do upload
+                Div(
+                    Div(id="upload-bar", cls="bar"),
+                    id="upload-progress", cls="progress"
+                ),
+                # indicador de upload (aparece durante a requisição HTMX do form)
+                Div(Span(cls="spinner"), " 📤 Enviando imagem...", id="upload-indicator", cls="htmx-indicator mt-8"),
+                cls="stack"
             ),
-            hx_post="/upload", hx_target="#stage", hx_swap="innerHTML", hx_indicator=".htmx-indicator"
+            # input real (escondido). Quando muda, o form é enviado por HTMX
+            Input(type="file", id="file", name="file", accept="image/*", required=True, style="display:none"),
+            hx_post="/upload",
+            hx_target="#stage",
+            hx_swap="innerHTML",
+            hx_indicator="#upload-indicator",
+            hx_encoding="multipart/form-data",
+            hx_trigger="change from:#file",
+            cls="container upload-form"
         ),
-        cls="container"
+        cls="container upload-card fade-in"
     )
 
 def AnalysisActions(uid: str):
     return Div(
-        Button("Analisar", cls="primary",
-               hx_post=f"/analyze?uid={uid}",
-               hx_target="#stage",
-               hx_swap="innerHTML",
-               hx_indicator=".htmx-indicator"),
-        A("Nova análise", href="/", cls="secondary outline"),
-        cls="grid"
+        # botão que dispara análise; indicador próprio e disable enquanto roda
+        Div(
+            Button("🔍 Analisar Imagem", id="analyze-btn", cls="primary analysis-btn",
+                   hx_post=f"/analyze?uid={uid}",
+                   hx_target="#stage",
+                   hx_swap="innerHTML",
+                   hx_indicator="#analyze-indicator",
+                   hx_disabled_elt="#analyze-btn"),
+            Span(Span(cls="spinner"), " 🤖 Analisando com IA...", id="analyze-indicator", cls="htmx-indicator"),
+            cls="cluster analysis-actions"
+        ),
+        A("🆕 Nova análise", href="/", cls="secondary outline new-analysis-btn"),
+        cls="grid action-buttons"
     )
 
 def PreviewCard(img_src_rel: str, uid: str, original_name: str):
     return Card(
-        H2("Pré-visualização"),
-        P(Strong("Arquivo: "), original_name),
-        Img(src=img_src_rel, alt="Pré-visualização", style="max-width:100%; height:auto; border-radius:8px;"),
-        AnalysisActions(uid)
+        H2("👀 Pré-visualização da Imagem", cls="preview-title"),
+        P(Strong("📁 Arquivo: "), original_name, cls="file-info"),
+        Div(
+            Img(src=img_src_rel, alt="Pré-visualização da imagem médica", cls="preview-image"),
+            cls="image-container"
+        ),
+        AnalysisActions(uid),
+        cls="preview-card fade-in"
     )
 
 def ResultCard(markdown_html: str, uid: str):
+    # NotStr → insere HTML sem escapar
     return Card(
-        H2("Relatório"),
-        Div(NotStr(markdown_html), style="max-width:900px;"),
+        H2("📋 Relatório de Análise", cls="report-title"),
+        Div(NotStr(markdown_html), cls="medical-report"),
         Div(
-            A("Baixar relatório (.md)", href=f"/download/{uid}.md", cls="primary"),
-            A("Baixar PDF", href=f"/download/{uid}.pdf", cls="secondary"),
-            A("Nova análise", href="/", cls="contrast outline"),
-            cls="grid"
-        )
+            A("📄 Baixar relatório (.md)", href=f"/download/{uid}.md", cls="primary download-btn"),
+            A("📑 Baixar PDF", href=f"/download/{uid}.pdf", cls="secondary download-btn"),
+            A("🆕 Nova análise", href="/", cls="contrast outline new-analysis-btn"),
+            cls="grid download-actions"
+        ),
+        cls="result-card fade-in"
     )
-
 
 def HistoryList(items):
     if not items:
-        return Card(P("Nenhuma análise encontrada."), cls="container")
+        return Card(
+            Div(
+                H3("📭 Nenhuma análise encontrada"),
+                P("Comece enviando sua primeira imagem médica para análise.", cls="text-center"),
+                A("📤 Enviar primeira imagem", href="/", cls="primary"),
+                cls="text-center empty-state"
+            ), 
+            cls="container"
+        )
     rows = []
     for it in items:
         rows.append(
             Tr(
-                Td(it["created_at"].replace("T", " ").split(".")[0]),
-                Td(it["original_name"]),
+                Td(it["created_at"].replace("T", " ").split(".")[0], cls="date-cell"),
+                Td(it["original_name"], cls="filename-cell"),
                 Td(
-                    A("Abrir", href=f"/view/{it['id']}", cls="primary"),
+                    A("👁️ Abrir", href=f"/view/{it['id']}", cls="primary action-btn"),
                     " ",
-                    A("Baixar .md", href=f"/download/{it['id']}.md"),
+                    A("📄 .md", href=f"/download/{it['id']}.md", cls="secondary action-btn"),
                     " ",
-                    A("Baixar .pdf", href=f"/download/{it['id']}.pdf"),
+                    A("📑 .pdf", href=f"/download/{it['id']}.pdf", cls="secondary action-btn"),
                     " ",
-                    Button("Excluir", cls="secondary outline",
+                    Button("🗑️ Excluir", cls="secondary outline danger-btn",
                            hx_post=f"/delete/{it['id']}",
-                           hx_confirm="Tem certeza que deseja excluir?",
+                           hx_confirm="⚠️ Tem certeza que deseja excluir esta análise?",
                            hx_target="#history",
-                           hx_swap="innerHTML")
+                           hx_swap="innerHTML"),
+                    cls="actions-cell"
                 )
             )
         )
     return Card(
-        H2("Histórico de análises"),
+        H2("📋 Histórico de Análises", cls="history-title"),
         Table(
-            Thead(Tr(Th("Data"), Th("Arquivo"), Th("Ações"))),
-            Tbody(*rows)
+            Thead(Tr(Th("📅 Data"), Th("📁 Arquivo"), Th("⚙️ Ações"), cls="table-header")),
+            Tbody(*rows),
+            cls="history-table"
         ),
-        cls="container"
+        cls="container history-card"
     )
 
 def Layout(*children):
     return Titled(
-        "Analisador de Imagens Médicas",
+        "🩺 Analisador de Imagens Médicas - Diagnóstico por IA",
         Head(
+            Meta(name="viewport", content="width=device-width, initial-scale=1.0"),
+            Meta(name="description", content="Análise de imagens médicas com inteligência artificial"),
             Link(rel="stylesheet", href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css"),
             Link(rel="stylesheet", href="/static/spinner.css"),
             Script(src="/static/theme.js"),
+            Script(src="https://unpkg.com/htmx.org@1.9.10/dist/htmx.min.js"),
+            # Adicionar favicon
+            Link(rel="icon", href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🩺</text></svg>")
         ),
         HeaderBar(),
-        Main(*children, cls="container")
+        Main(*children, cls="container main-content"),
+        # Footer médico
+        Footer(
+            P("⚠️ Este sistema é uma ferramenta de apoio diagnóstico. Sempre consulte um profissional de saúde qualificado para decisões médicas.", cls="text-center medical-warning"),
+            P("Desenvolvido com ❤️ para auxiliar profissionais de saúde", cls="text-center footer-credit"),
+            cls="container medical-footer"
+        )
     )
 
+# ---------- Páginas ----------
 @rt("/")
 def index():
     return Layout(
@@ -180,6 +236,7 @@ def view(uid: str):
         )
     )
 
+# ---------- Rotas parciais (HTMX) ----------
 @rt("/upload", methods=["POST"])
 async def upload(file: StarletteUploadFile):
     if file is None or not getattr(file, "filename", ""):
@@ -337,4 +394,5 @@ def static(fname: str):
     return FileResponse(path)
 
 if __name__ == "__main__":
+    import uvicorn
     uvicorn.run("app.main:app", host="0.0.0.0", port=5001, reload=True)
