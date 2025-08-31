@@ -161,8 +161,8 @@ def Layout(*children):
                 NotStr(create_loading_overlay()),
         # Footer médico
         Footer(
-            P("⚠️ Este sistema é uma ferramenta de apoio diagnóstico. Sempre consulte um profissional de saúde qualificado para decisões médicas.", cls="text-center medical-warning"),
-            P("Desenvolvido com ❤️ para auxiliar profissionais de saúde", cls="text-center footer-credit"),
+            P("⚠️ Este sistema é uma ferramenta de apoio diagnóstico. Não substitui a decisão final do profissional médico.", cls="text-center medical-warning"),
+            P("Desenvolvido pelo Projeto Cidades Inteligentes - Ariquemes/RO", cls="text-center footer-credit"),
             cls="container medical-footer"
         )
     )
