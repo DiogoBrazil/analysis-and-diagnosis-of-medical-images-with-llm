@@ -66,25 +66,31 @@ def AnalysisActions(uid: str):
                    hx_post=f"/analyze?uid={uid}",
                    hx_target="#stage",
                    hx_swap="innerHTML",
-             hx_indicator="#analyze-indicator",
+         hx_indicator="#analyze-indicator",
                    hx_disabled_elt="#analyze-btn",
-                   onclick="showLoadingOverlay()"),
-            NotStr(create_loading_overlay()),
+             onclick="showLoadingOverlay()"),
             cls="cluster analysis-actions"
         ),
-        A("🆕 Nova análise", href="/", cls="secondary outline new-analysis-btn"),
         cls="grid action-buttons"
     )
 
 def PreviewCard(img_src_rel: str, uid: str, original_name: str):
+    # Estrutura visual alinhada ao card de resultado
     return Card(
-        H2("👀 Pré-visualização da Imagem", cls="preview-title"),
+        H2("👀 Pré-visualização da Imagem", cls="report-title preview-title"),
         P(Strong("📁 Arquivo: "), original_name, cls="file-info"),
         Div(
-            Img(src=img_src_rel, alt="Pré-visualização da imagem médica", cls="preview-image"),
+            Div(
+                Img(src=img_src_rel, alt="Pré-visualização da imagem médica", cls="preview-image"),
+                cls="image-panel"
+            ),
             cls="image-container"
         ),
         AnalysisActions(uid),
+        Div(
+            A("🆕 Nova análise", href="/", cls="secondary outline button full-width new-analysis-btn"),
+            cls="mt-4"
+        ),
         cls="preview-card fade-in"
     )
 
@@ -99,9 +105,7 @@ def ResultCard(markdown_html: str, uid: str):
             cls="medical-report-scroll"
         ),
         Div(
-            A("📄 Baixar relatório (.md)", href=f"/download/{uid}.md", cls="primary button download-btn"),
-            A("📑 Baixar PDF", href=f"/download/{uid}.pdf", cls="secondary button download-btn"),
-            A("🆕 Nova análise", href="/", cls="contrast outline button new-analysis-btn"),
+            A(" Baixar PDF", href=f"/download/{uid}.pdf", cls="primary button download-btn full-width"),
             cls="grid download-actions"
         ),
         cls="result-card fade-in"
@@ -122,20 +126,30 @@ def Layout(*children):
             # Adicionar favicon
             Link(rel="icon", href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🩺</text></svg>"),
             # JavaScript para loading
-            Script("""
-                function showLoadingOverlay() {
-            const indicator = document.getElementById('analyze-indicator');
-            if (indicator) indicator.style.display = 'flex';
-                }
-                
-                // Ocultar loading quando htmx terminar
-                document.addEventListener('htmx:afterRequest', function() {
-                    const indicator = document.getElementById('analyze-indicator');
-            if (indicator) indicator.style.display = 'none';
-                });
-            """)
+                        Script("""
+                                function showLoadingOverlay() {
+                                    const indicator = document.getElementById('analyze-indicator');
+                                    if (indicator) indicator.style.display = 'flex';
+                                    document.body.classList.add('loading-locked');
+                                }
+
+                                // Exibir/ocultar loading automaticamente para requisições HTMX
+                                document.addEventListener('htmx:beforeRequest', function(evt) {
+                                    const indicator = document.getElementById('analyze-indicator');
+                                    if (indicator) indicator.style.display = 'flex';
+                                    document.body.classList.add('loading-locked');
+                                });
+
+                                document.addEventListener('htmx:afterRequest', function(evt) {
+                                    const indicator = document.getElementById('analyze-indicator');
+                                    if (indicator) indicator.style.display = 'none';
+                                    document.body.classList.remove('loading-locked');
+                                });
+                        """)
         ),
-        Main(*children, cls="container main-content"),
+                Main(*children, cls="container main-content"),
+                # Loader global (fora dos cards para cobrir a página toda)
+                NotStr(create_loading_overlay()),
         # Footer médico
         Footer(
             P("⚠️ Este sistema é uma ferramenta de apoio diagnóstico. Sempre consulte um profissional de saúde qualificado para decisões médicas.", cls="text-center medical-warning"),
@@ -232,10 +246,26 @@ def analyze(uid: str):
     rel_img_src = f"/staticfile/{uid}/processed.jpg" if os.path.exists(processed) else ""
 
     return Div(
-        Card(
-            H2("👀 Pré-visualização da Imagem", cls="preview-title"),
-            (Img(src=rel_img_src, alt="Imagem processada", cls="preview-image") if rel_img_src else P("Imagem não disponível.")),
-            ResultCard(result["markdown"], uid)
+        Div(
+            Div(
+                Card(
+                    H2("👀 Pré-visualização da Imagem", cls="report-title preview-title"),
+                    Div(
+                        (Img(src=rel_img_src, alt="Imagem processada", cls="preview-image") if rel_img_src else P("Imagem não disponível.")),
+                        cls="image-panel"
+                    ),
+                    Div(
+                        A("🆕 Nova análise", href="/", cls="secondary outline button full-width new-analysis-btn"),
+                        cls="mt-4"
+                    )
+                ),
+                cls="analysis-image"
+            ),
+            Div(
+                ResultCard(result["markdown"], uid),
+                cls="analysis-report"
+            ),
+            cls="analysis-grid"
         )
     )
 

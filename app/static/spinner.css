@@ -214,6 +214,26 @@ footer.medical-footer { margin-top: auto; width: 100%; }
   .grid { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
 }
 
+/* ---------- Analysis two-column layout ---------- */
+.analysis-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.875rem;
+  align-items: start;
+}
+
+.analysis-image { position: sticky; top: 0.5rem; }
+.analysis-image .preview-image { max-height: 70vh; object-fit: contain; }
+
+.analysis-report .report-title { font-size: 0.9rem; }
+.analysis-report .medical-report { font-size: 0.8rem; }
+.analysis-report .medical-report-scroll { max-height: 70vh; }
+
+@media (max-width: 992px) {
+  .analysis-grid { grid-template-columns: 1fr; }
+  .analysis-image { position: static; }
+}
+
 /* ---------- Images ---------- */
 img {
   border-radius: var(--border-radius);
@@ -507,6 +527,9 @@ tr:hover {
   position: relative;
 }
 
+.preview-title { font-size: var(--font-size-base) !important; }
+.image-panel { display:flex; align-items:center; justify-content:center; background:#fff; border:1px solid #e9ecef; border-radius: var(--border-radius); padding: 0.5rem; }
+
 .preview-image {
   max-width: 100%;
   height: auto;
@@ -570,6 +593,8 @@ tr:hover {
   padding: 0.875rem;
   border-radius: var(--border-radius);
   margin-top: 1rem;
+  display: grid;
+  grid-template-columns: 1fr;
 }
 
 .download-btn {
@@ -579,6 +604,10 @@ tr:hover {
   text-decoration: none;
   font-size: var(--font-size-sm);
 }
+
+.full-width { width: 100%; }
+.new-analysis-btn { border-color: #94a3b8; color: #334155; background: #f8fafc; }
+.new-analysis-btn:hover { background: #e2e8f0; color: #111827; }
 
 .enhanced-dropzone {
   padding: 2rem 1rem;
@@ -817,15 +846,7 @@ tr:hover {
 .medical-report-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 999px; }
 
 /* --------- Heart-rate Loader (from modelo_loader.md) --------- */
-.loading-overlay {
-  position: fixed;
-  inset: 0;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0,0,0,0.35);
-  z-index: 9999;
-}
+.loading-overlay { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.45); z-index: 9999; backdrop-filter: blur(2px); }
 .hr-box {
   background: white;
   border-radius: 14px;
@@ -887,19 +908,8 @@ tr:hover {
 }
 
 /* Loading Overlay */
-.loading-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  backdrop-filter: blur(3px);
-}
+/* keep single definition above; ensure page lock */
+body.loading-locked { overflow: hidden; }
 
 .loading-content {
   background: white;
