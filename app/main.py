@@ -264,8 +264,12 @@ def analyze(uid: str):
                         cls="image-panel"
                     ),
                     Div(
-            A("🆕 Nova análise", href="/", cls="secondary button full-width action-lg new-analysis-btn"),
-                        cls="mt-4"
+                        A(
+                            "🆕 Nova análise",
+                            href="/",
+                            cls="primary button download-btn full-width action-lg new-analysis-btn"
+                        ),
+                        cls="grid download-actions"
                     )
                 ),
                 cls="analysis-image"

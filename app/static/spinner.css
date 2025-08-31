@@ -19,7 +19,7 @@
   --font-size-lg: 0.92rem;
   --font-size-xl: 1.02rem;
   /* Altura dos cards de análise (~30% menor que 70vh) */
-  --analysis-card-h: 55vh;
+  --analysis-card-h: 63vh;
 }
 
 /* ---------- Base Overrides ---------- */
@@ -622,8 +622,9 @@ tr:hover {
 
 .full-width { width: 100%; }
 .action-lg { padding: 0.7rem 1rem !important; min-height: 42px; font-weight: 700; }
-.new-analysis-btn { border-color: #94a3b8; color: #334155; background: #f8fafc; }
-.new-analysis-btn:hover { background: #e2e8f0; color: #111827; }
+/* Keep custom style only when it's not a primary button */
+.new-analysis-btn:not(.primary) { border-color: #94a3b8; color: #334155; background: #f8fafc; }
+.new-analysis-btn:hover:not(.primary) { background: #e2e8f0; color: #111827; }
 
 .enhanced-dropzone {
   padding: 2rem 1rem;
@@ -891,6 +892,13 @@ tr:hover {
 }
 .download-actions { gap: 0.5rem; }
 .download-btn { white-space: nowrap; }
+
+/* Ensure full width for action buttons in action container */
+.download-actions .button,
+.download-actions .download-btn,
+.download-actions .new-analysis-btn {
+  width: 100% !important;
+}
 
 /* Reference links styling */
 .medical-report .reference-link {
