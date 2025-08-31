@@ -62,7 +62,7 @@ def AnalysisActions(uid: str):
     return Div(
         # botão que dispara análise; indicador próprio e disable enquanto roda
         Div(
-            Button("🔍 Analisar Imagem", id="analyze-btn", cls="primary analysis-btn",
+            Button("🔍 Analisar Imagem", id="analyze-btn", cls="primary analysis-btn full-width action-lg",
                    hx_post=f"/analyze?uid={uid}",
                    hx_target="#stage",
                    hx_swap="innerHTML",
@@ -86,7 +86,20 @@ def PreviewCard(img_src_rel: str, uid: str, original_name: str):
             ),
             cls="image-container"
         ),
-    AnalysisActions(uid),
+        Div(
+            Button(
+                "🔍 Analisar Imagem",
+                id="analyze-btn",
+                cls="primary analysis-btn full-width action-lg",
+                hx_post=f"/analyze?uid={uid}",
+                hx_target="#stage",
+                hx_swap="innerHTML",
+                hx_indicator="#analyze-indicator",
+                hx_disabled_elt="#analyze-btn",
+                onclick="showLoadingOverlay()"
+            ),
+            cls="grid download-actions"
+        ),
         cls="preview-card fade-in"
     )
 
