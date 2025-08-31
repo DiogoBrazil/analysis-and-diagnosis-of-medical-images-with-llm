@@ -6,9 +6,7 @@ from starlette.datastructures import UploadFile as StarletteUploadFile
 
 from app.services.imaging import is_allowed_filename, save_upload_to_disk, STORAGE_DIR
 from app.services.pipeline import run_pipeline
-from app.services.db import save_analysis, list_analyses, get_analysis, delete_analysis
-
-# PDF
+from app.utils import markdown_to_html, create_loading_overlay
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
@@ -22,19 +20,7 @@ app = FastHTML()
 rt = app.route
 
 # ---------- Helpers UI ----------
-def HeaderBar():
-    return Header(
-        Nav(
-            Ul(
-                Li(A("🏠 Início", href="/", cls="nav-link")),
-                Li(A("📋 Histórico", href="/history", cls="nav-link")),
-                Li(Button("🌙 Modo escuro", type="button", onclick="toggleTheme()", cls="secondary outline theme-toggle")),
-            ),
-        ),
-        H1("🩺 Analisador de Imagens Médicas"),
-        P("⚠️ Resultados não substituem avaliação médica profissional.", cls="contrast medical-disclaimer"),
-        cls="container"
-    )
+# Header removido conforme solicitado
 
 def UploadCard():
     # Form com auto-submit quando o input #file mudar (hx-trigger) e DnD via JS
@@ -80,9 +66,10 @@ def AnalysisActions(uid: str):
                    hx_post=f"/analyze?uid={uid}",
                    hx_target="#stage",
                    hx_swap="innerHTML",
-                   hx_indicator="#analyze-indicator",
-                   hx_disabled_elt="#analyze-btn"),
-            Span(Span(cls="spinner"), " 🤖 Analisando com IA...", id="analyze-indicator", cls="htmx-indicator"),
+             hx_indicator="#analyze-indicator",
+                   hx_disabled_elt="#analyze-btn",
+                   onclick="showLoadingOverlay()"),
+            NotStr(create_loading_overlay()),
             cls="cluster analysis-actions"
         ),
         A("🆕 Nova análise", href="/", cls="secondary outline new-analysis-btn"),
@@ -102,61 +89,25 @@ def PreviewCard(img_src_rel: str, uid: str, original_name: str):
     )
 
 def ResultCard(markdown_html: str, uid: str):
-    # NotStr → insere HTML sem escapar
+    # Converter markdown para HTML adequado
+    html_content = markdown_to_html(markdown_html)
+    
     return Card(
         H2("📋 Relatório de Análise", cls="report-title"),
-        Div(NotStr(markdown_html), cls="medical-report"),
         Div(
-            A("📄 Baixar relatório (.md)", href=f"/download/{uid}.md", cls="primary download-btn"),
-            A("📑 Baixar PDF", href=f"/download/{uid}.pdf", cls="secondary download-btn"),
-            A("🆕 Nova análise", href="/", cls="contrast outline new-analysis-btn"),
+            Div(NotStr(html_content), cls="medical-report"),
+            cls="medical-report-scroll"
+        ),
+        Div(
+            A("📄 Baixar relatório (.md)", href=f"/download/{uid}.md", cls="primary button download-btn"),
+            A("📑 Baixar PDF", href=f"/download/{uid}.pdf", cls="secondary button download-btn"),
+            A("🆕 Nova análise", href="/", cls="contrast outline button new-analysis-btn"),
             cls="grid download-actions"
         ),
         cls="result-card fade-in"
     )
 
-def HistoryList(items):
-    if not items:
-        return Card(
-            Div(
-                H3("📭 Nenhuma análise encontrada"),
-                P("Comece enviando sua primeira imagem médica para análise.", cls="text-center"),
-                A("📤 Enviar primeira imagem", href="/", cls="primary"),
-                cls="text-center empty-state"
-            ), 
-            cls="container"
-        )
-    rows = []
-    for it in items:
-        rows.append(
-            Tr(
-                Td(it["created_at"].replace("T", " ").split(".")[0], cls="date-cell"),
-                Td(it["original_name"], cls="filename-cell"),
-                Td(
-                    A("👁️ Abrir", href=f"/view/{it['id']}", cls="primary action-btn"),
-                    " ",
-                    A("📄 .md", href=f"/download/{it['id']}.md", cls="secondary action-btn"),
-                    " ",
-                    A("📑 .pdf", href=f"/download/{it['id']}.pdf", cls="secondary action-btn"),
-                    " ",
-                    Button("🗑️ Excluir", cls="secondary outline danger-btn",
-                           hx_post=f"/delete/{it['id']}",
-                           hx_confirm="⚠️ Tem certeza que deseja excluir esta análise?",
-                           hx_target="#history",
-                           hx_swap="innerHTML"),
-                    cls="actions-cell"
-                )
-            )
-        )
-    return Card(
-        H2("📋 Histórico de Análises", cls="history-title"),
-        Table(
-            Thead(Tr(Th("📅 Data"), Th("📁 Arquivo"), Th("⚙️ Ações"), cls="table-header")),
-            Tbody(*rows),
-            cls="history-table"
-        ),
-        cls="container history-card"
-    )
+# Histórico removido
 
 def Layout(*children):
     return Titled(
@@ -166,12 +117,24 @@ def Layout(*children):
             Meta(name="description", content="Análise de imagens médicas com inteligência artificial"),
             Link(rel="stylesheet", href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css"),
             Link(rel="stylesheet", href="/static/spinner.css"),
-            Script(src="/static/theme.js"),
+            Script(src="/static/dnd.js"),
             Script(src="https://unpkg.com/htmx.org@1.9.10/dist/htmx.min.js"),
             # Adicionar favicon
-            Link(rel="icon", href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🩺</text></svg>")
+            Link(rel="icon", href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🩺</text></svg>"),
+            # JavaScript para loading
+            Script("""
+                function showLoadingOverlay() {
+            const indicator = document.getElementById('analyze-indicator');
+            if (indicator) indicator.style.display = 'flex';
+                }
+                
+                // Ocultar loading quando htmx terminar
+                document.addEventListener('htmx:afterRequest', function() {
+                    const indicator = document.getElementById('analyze-indicator');
+            if (indicator) indicator.style.display = 'none';
+                });
+            """)
         ),
-        HeaderBar(),
         Main(*children, cls="container main-content"),
         # Footer médico
         Footer(
@@ -190,51 +153,7 @@ def index():
         )
     )
 
-@rt("/history")
-def history():
-    items = list_analyses(limit=50)
-    return Layout(
-        Div(id="history")(
-            HistoryList(items)
-        )
-    )
-
-@rt("/view/{uid}")
-def view(uid: str):
-    rec = get_analysis(uid)
-    if not rec:
-        return Layout(Card(P("Registro não encontrado."), cls="container"))
-    if not rec["md_path"] or not os.path.exists(rec["md_path"]):
-        return Layout(Card(P("Relatório não encontrado."), cls="container"))
-
-    with open(rec["md_path"], "r", encoding="utf-8") as f:
-        md = f.read()
-
-    md_html = (
-        md.replace("\n\n", "<br><br>")
-          .replace("\n", "<br>")
-          .replace("# Relatório de Análise de Imagem Médica", "<h2>Relatório de Análise de Imagem Médica</h2>")
-          .replace("## 📋 Resultado da Análise", "<h3>📋 Resultado da Análise</h3>")
-          .replace("## 📚 Referências", "<h3>📚 Referências</h3>")
-    )
-
-    img_src = ""
-    if rec["processed_path"] and os.path.exists(rec["processed_path"]):
-        fname = os.path.basename(rec["processed_path"])
-        img_src = f"/staticfile/{uid}/{fname}"
-
-    return Layout(
-        Section(
-            Div(
-                Div(
-                    (Img(src=img_src, alt="Imagem processada", style="width:100%;border-radius:8px;") if img_src else P("Imagem não disponível.")),
-                    cls="col"
-                ),
-                Div(ResultCard(md_html, uid), cls="col"),
-                cls="grid"
-            ),
-        )
-    )
+# Rotas de histórico e visualização removidas
 
 # ---------- Rotas parciais (HTMX) ----------
 @rt("/upload", methods=["POST"])
@@ -307,26 +226,17 @@ def analyze(uid: str):
     with open(md_path, "w", encoding="utf-8") as f:
         f.write(result["markdown"])
 
-    save_analysis(
-        uid=uid,
-        original_name=original_name,
-        processed_path=processed,
-        md_path=md_path,
-        analysis_text=result["analysis"],
-        refs=result["references"]
-    )
+    # Nenhum armazenamento em banco: usuário fará o download se desejar
 
-    md_html = (
-        result["markdown"]
-            .replace("\n\n", "<br><br>")
-            .replace("\n", "<br>")
-            .replace("# Relatório de Análise de Imagem Médica", "<h2>Relatório de Análise de Imagem Médica</h2>")
-            .replace("## 📋 Resultado da Análise", "<h3>📋 Resultado da Análise</h3>")
-            .replace("## 📚 Referências", "<h3>📚 Referências</h3>")
-    )
+    # imagem processada relativa
+    rel_img_src = f"/staticfile/{uid}/processed.jpg" if os.path.exists(processed) else ""
 
     return Div(
-        ResultCard(md_html, uid)
+        Card(
+            H2("👀 Pré-visualização da Imagem", cls="preview-title"),
+            (Img(src=rel_img_src, alt="Imagem processada", cls="preview-image") if rel_img_src else P("Imagem não disponível.")),
+            ResultCard(result["markdown"], uid)
+        )
     )
 
 @rt("/download/{uid}.md")
@@ -339,10 +249,11 @@ def download_md(uid: str):
 
 @rt("/download/{uid}.pdf")
 def download_pdf(uid: str):
-    rec = get_analysis(uid)
-    if not rec or not rec.get("md_path") or not os.path.exists(rec["md_path"]):
+    folder = os.path.join(STORAGE_DIR, uid)
+    md_path = os.path.join(folder, "report.md")
+    if not os.path.exists(md_path):
         return PlainTextResponse("Relatório não encontrado.", status_code=404)
-    with open(rec["md_path"], "r", encoding="utf-8") as f:
+    with open(md_path, "r", encoding="utf-8") as f:
         content = f.read()
 
     out_path = os.path.join(STORAGE_DIR, uid, "report.pdf")
@@ -375,13 +286,7 @@ def download_pdf(uid: str):
 
     return FileResponse(out_path, media_type="application/pdf", filename=f"relatorio-{uid}.pdf")
 
-@rt("/delete/{uid}", methods=["POST"])
-def delete(uid: str):
-    delete_analysis(uid)
-    items = list_analyses(limit=50)
-    return Div(id="history")(
-        HistoryList(items)
-    )
+# Rota de exclusão removida
 
 @rt("/static/{fname:path}")
 def static(fname: str):
