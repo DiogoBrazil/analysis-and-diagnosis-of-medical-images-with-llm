@@ -18,6 +18,8 @@
   --font-size-base: 0.84rem;
   --font-size-lg: 0.92rem;
   --font-size-xl: 1.02rem;
+  /* Altura dos cards de análise (~30% menor que 70vh) */
+  --analysis-card-h: 50vh;
 }
 
 /* ---------- Base Overrides ---------- */
@@ -219,15 +221,19 @@ footer.medical-footer { margin-top: auto; width: 100%; }
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.875rem;
-  align-items: start;
+  align-items: stretch;
 }
 
 .analysis-image { position: sticky; top: 0.5rem; }
-.analysis-image .preview-image { max-height: 70vh; object-fit: contain; }
+.analysis-image > article, .analysis-report > article { display: flex; flex-direction: column; height: var(--analysis-card-h); }
+.analysis-image .image-panel { flex: 1; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.analysis-image .preview-image { max-height: 100%; max-width: 100%; object-fit: contain; }
 
 .analysis-report .report-title { font-size: 0.9rem; }
 .analysis-report .medical-report { font-size: 0.8rem; }
-.analysis-report .medical-report-scroll { max-height: 70vh; }
+.analysis-report .medical-report-scroll { max-height: 100%; }
+.result-card { display: flex; flex-direction: column; height: var(--analysis-card-h); }
+.result-card .medical-report-scroll { flex: 1; }
 
 @media (max-width: 992px) {
   .analysis-grid { grid-template-columns: 1fr; }
@@ -606,6 +612,7 @@ tr:hover {
 }
 
 .full-width { width: 100%; }
+.action-lg { padding: 0.7rem 1rem !important; min-height: 42px; font-weight: 700; }
 .new-analysis-btn { border-color: #94a3b8; color: #334155; background: #f8fafc; }
 .new-analysis-btn:hover { background: #e2e8f0; color: #111827; }
 

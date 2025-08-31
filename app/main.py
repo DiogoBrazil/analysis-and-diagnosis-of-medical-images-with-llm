@@ -86,11 +86,7 @@ def PreviewCard(img_src_rel: str, uid: str, original_name: str):
             ),
             cls="image-container"
         ),
-        AnalysisActions(uid),
-        Div(
-            A("🆕 Nova análise", href="/", cls="secondary outline button full-width new-analysis-btn"),
-            cls="mt-4"
-        ),
+    AnalysisActions(uid),
         cls="preview-card fade-in"
     )
 
@@ -105,7 +101,7 @@ def ResultCard(markdown_html: str, uid: str):
             cls="medical-report-scroll"
         ),
         Div(
-            A(" Baixar PDF", href=f"/download/{uid}.pdf", cls="primary button download-btn full-width"),
+            A("📑 Baixar PDF", href=f"/download/{uid}.pdf", cls="primary button download-btn full-width action-lg"),
             cls="grid download-actions"
         ),
         cls="result-card fade-in"
@@ -248,14 +244,14 @@ def analyze(uid: str):
     return Div(
         Div(
             Div(
-                Card(
+        Card(
                     H2("👀 Pré-visualização da Imagem", cls="report-title preview-title"),
                     Div(
                         (Img(src=rel_img_src, alt="Imagem processada", cls="preview-image") if rel_img_src else P("Imagem não disponível.")),
                         cls="image-panel"
                     ),
                     Div(
-                        A("🆕 Nova análise", href="/", cls="secondary outline button full-width new-analysis-btn"),
+            A("🆕 Nova análise", href="/", cls="secondary button full-width action-lg new-analysis-btn"),
                         cls="mt-4"
                     )
                 ),
